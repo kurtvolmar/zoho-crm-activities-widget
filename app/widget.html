@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+      <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    
+    <!-- Custom CSS -->
+    <link href="css/styles.css" type="text/css" rel="stylesheet">
+
+    <!-- Zoho Embedded App Framework -->
+    <script src="https://live.zwidgets.com/js-sdk/1.0.5/ZohoEmbededAppSDK.min.js"></script>
+  </head>
+  <body>
+
+    <div id="app" class="bg-light">
+
+      <!-- Title -->
+      <div id="title" class="text-primary">
+        <h2>{{ deal.name }}</h2>
+      </div>
+      
+      <!-- Table and Add Contacts Button -->
+      <div id="contacts">
+        <div id="table-title">
+          <h3 class="text-dark">Associated Contacts</h3>
+          <!-- Add Contact Button -->
+          <button type="button" class="btn btn-outline-dark" data-toggle="modal" data-target="#exampleModal">
+            Add Contact
+          </button>
+
+          <!-- Bootstrap Modal for Adding Contact -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Add Contact</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+
+                <!-- Form Fields -->
+                <form>
+                  <div class="modal-body">
+                    
+                      <!-- First / Last Name -->
+                      <div class="form-row">
+                        <div class="col form-group">
+                          <label for="contactFirstName">First</label>
+                          <input v-model="newContact.first" type="text" class="form-control" id="contactFirstName" placeholder="First Name" required>
+                        </div>
+                        <div class="col form-group">
+                          <label for="contactLastName">Last</label>
+                          <input v-model="newContact.last" type="text" class="form-control" id="contactLastName" placeholder="Last Name" required>
+                        </div>
+                      </div>
+                      <!-- Title and Role -->
+                      <div class="form-row">
+                        <!-- Title -->
+                        <div class="col form-group">
+                          <label for="contactTitle">Title</label>
+                          <input v-model="newContact.title" type="text" class="form-control" id="contactTitle" placeholder="Title">
+                        </div>
+                        <!-- Role -->
+                        <div class="col form-group">
+                          <label for="contactRole">Role</label>
+                          <select v-model="newContact.role" id="contactRole" class="form-control" required>
+                            <option selected>Choose Role...</option>
+                            <option>Teacher</option>
+                            <option>Decision Maker</option>
+                            <option>Purchasing</option>
+                          </select>
+                        </div>
+                      </div>
+                      <!-- Email -->
+                      <div class="form-group">
+                        <label for="contactEmail">Email</label>
+                        <input v-model="newContact.email" type="email" class="form-control" id="contactEmail" aria-describedby="emailHelp" placeholder="Email" required>
+                      </div>
+                      <!-- Phone -->
+                      <div class="form-group">
+                        <label for="contactPhone">Phone</label>
+                        <input v-model="newContact.phone" type="tel" class="form-control" id="contactPhone" placeholder="Phone">
+                      </div>
+                        
+                  </div>
+
+                  <!-- Submit Buttons -->
+                  <div class="modal-footer">
+                    <!-- Close Button -->
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                    <!-- Add Button-->
+                    <button v-if="!loading" v-on:submit="addContact()" type="submit" class="btn btn-primary">
+                      Add Contact
+                    </button>
+
+                    <!-- Spinner -->
+                    <div v-else class="spinner-border text-primary" role="status">
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </div>
+                </form>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <table id="table">
+          <tr v-for="contact in contacts">
+            <td class="text-dark" class="contact-name">
+              <a v-bind:href="'https://crm.zoho.com/crm/org697466983/tab/Contacts/'+ contact.id" target="_blank">
+                {{ contact.name }}
+              </a>
+            </td>
+            
+            <!-- In-Person Button -->
+            <td class="button-column">
+              <button v-on:click="contact.inPerson = !contact.inPerson" type="button" data-toggle="tooltip" title="In Person Meeting">
+                <i v-if="!loading" v-bind:class="{ selected: contact.inPerson, unselected: !contact.inPerson }" class="material-icons">person_pin</i>
+              </button>
+            </td>
+
+            <!-- Call Button -->
+            <td class="button-column">
+              <button v-on:click="contact.call = !contact.call" type="button" data-toggle="tooltip" title="Call">
+                <i v-if="!loading" v-bind:class="{ selected: contact.call, unselected: !contact.call }" class="material-icons">call</i>
+              </button>
+            </td>
+
+            <!-- Email Button -->
+            <td class="button-column">
+              <button v-on:click="contact.email = !contact.email" type="button" data-toggle="tooltip" title="Email">
+                <i v-if="!loading" v-bind:class="{ selected: contact.email, unselected: !contact.email }" class="material-icons">email</i>
+              </button>
+            </td>
+
+            <!-- Social Button -->
+            <td class="button-column">
+              <button v-on:click="contact.social = !contact.social" type="button" data-toggle="tooltip" title="Social">
+                <i v-if="!loading" v-bind:class="{ selected: contact.social, unselected: !contact.social }" class="material-icons">groups</i>
+              </button>
+            </td>
+
+            <!-- Loading Icon -->
+            <td class="button-column">
+              <div v-if="contact.loading" class="spinner-grow spinner-grow-sm text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Submit Button and Spinner-->
+        <button v-if="!loading" v-on:click="createActivities()" type="button" class="btn btn-primary">
+          Add Activities
+        </button>
+        <div v-else class="spinner-border text-primary" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        
+      </div>
+        
+    </div>
+
+    <!-- jQuery and JS bundle w/ Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    
+    <!-- Vue -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <!-- Custom Javascript -->
+    <script src="js/app.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
